@@ -9,11 +9,11 @@ class TencentSpider(scrapy.Spider):
     allowed_domains = ['hr.tencent.com']
     
     # seed url种子URL
-    # start_urls = ['https://hr.tencent.com/position.php?keywords=python']
-    start_urls = []
-    for i in range(0,500,10):
-        url = 'https://hr.tencent.com/position.php?keywords=python&start='+str(i)+'#a'
-        start_urls.append(url)
+    start_urls = ['https://hr.tencent.com/position.php?keywords=python']
+    # start_urls = []
+    # for i in range(0,500,10):
+    #     url = 'https://hr.tencent.com/position.php?keywords=python&start='+str(i)+'#a'
+    #     start_urls.append(url)
 
     # 每次获取response响应时会调用这个方法，
     #需要在这个地方精确的匹配信息
@@ -28,10 +28,12 @@ class TencentSpider(scrapy.Spider):
             item['positionPublishTime'] = each.xpath('./td[5]/text()').extract()[0]
             yield item #返回给pipelines process_item
 
-
-            
-            
-            
+        nextpagelink = response.xpath('//*[@id="next"]')
+        if not nextpagelink.xpath('./@class'):
+            nextpageurl = 'https://hr.tencent.com/'+nextpagelink.xpath('./@href').extract()[0]
+        else:
+            return None
+        yield scrapy.Request(nextpageurl, callback=self.parse)
             
             
             
